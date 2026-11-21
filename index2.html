@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ذاكِر بصحبة - Study Squad</title>
+    
+    <!-- إعدادات الـ PWA لجعل التطبيق يظهر كأيقونة على الموبايل والكمبيوتر -->
+    <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22%D8%B0%D8%A7%D9%83%D9%90%D8%B1%20%D8%A8%D8%B5%D8%AD%D8%A8%D8%A9%22%2C%22short_name%22%3A%22Study%20Squad%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fimg.icons8.com%2Ffluency%2F96%2Fgraduation-cap.png%22%2C%22sizes%22%3A%2296x96%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent-primary: #6366f1;
+            --emerald-green: #10b981;
+            --amber-gold: #f59e0b;
+            --cyan-blue: #06b6d4;
+            --rose-red: #f43f5e;
+            --purple: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        /* شاشة تسجيل الدخول */
+        #loginScreen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .login-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-card h2 { color: #38bdf8; margin-bottom: 10px; }
+        .login-card p { color: #94a3b8; margin-bottom: 20px; font-size: 0.9rem; }
+        
+        .login-card input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: #fff;
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .btn {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover { opacity: 0.9; }
+
+        .error-msg {
+            display: none;
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.2);
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+        }
+
+        /* واجهة التطبيق الرئيسية */
+        #appContent {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 15px 20px;
+            border-radius: 12px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: var(--card-bg);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+        }
+
+        /* لوحة التحكم (Dashboard) */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .dash-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .dash-card h3 {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            margin-bottom: 8px;
+        }
+
+        .dash-card .dash-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+
+        .task-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .task-input-group input {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--card-border);
+            background: #0f172a;
+            color: white;
+            outline: none;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+        }
+
+        .task-item.locked { opacity: 0.5; }
+        .task-item.completed { border-color: var(--emerald-green); background: rgba(16, 185, 129, 0.1); }
+
+        .timer-display {
+            font-size: 3.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            color: var(--cyan-blue);
+            font-family: monospace;
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .calc-screen {
+            width: 100%;
+            height: 40px;
+            background: #000;
+            color: #0f0;
+            font-size: 1.2rem;
+            text-align: left;
+            padding: 5px 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: none;
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+        }
+
+        .calc-btn {
+            padding: 12px;
+            border-radius: 6px;
+            border: none;
+            background: #334155;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* تنسيقات نافذة الذكاء الاصطناعي */
+        .ai-chat-box {
+            background: #0f172a;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            height: 180px;
+            overflow-y: auto;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .ai-msg {
+            background: #1e293b;
+            padding: 8px 12px;
+            border-radius: 6px;
+            max-width: 85%;
+        }
+
+        .ai-msg.user {
+            background: var(--accent-primary);
+            align-self: flex-start;
+        }
+
+        .ai-msg.bot {
+            background: #334155;
+            align-self: flex-end;
+        }
+
+        .ai-input-group {
+            display: flex;
+            gap: 5px;
+        }
+
+        .ai-input-group input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--card-border);
+            background: #0f172a;
+            color: white;
+            outline: none;
+        }
+
+        .focus-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #090d16;
+            z-index: 999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- شاشة إدخال الـ ID -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <div style="font-size: 2.5rem; margin-bottom: 10px;">🚀</div>
+            <h2>ذاكِر بصحبة (Study Squad)</h2>
+            <p>أدخلي كود الـ ID الخاص بك للوصول لبيئة المذاكرة.</p>
+            <div id="errorBox" class="error-msg">كود الـ ID غير صحيح! (الكود هو: 2026)</div>
+            <input type="text" id="studentIdInput" placeholder="أدخلي الـ ID هنا" autocomplete="off">
+            <button class="btn" style="width:100%;" onclick="checkLogin()">دخول التطبيق ✨</button>
+        </div>
+    </div>
+
+    <!-- واجهة التطبيق الرئيسية -->
+    <div id="appContent">
+        <header>
+            <div>
+                <h2>🎓 ذاكِر بصحبة (Study Squad)</h2>
+                <small style="color: var(--text-sub)">نظام دعم وتنظيم مذاكرة الثانوية العامة</small>
+            </div>
+            <div class="header-actions">
+                <button class="btn" style="background:#0284c7;" onclick="triggerReturnBonus()">🔵 أنا رجعت</button>
+                <button class="btn" style="background:var(--purple);" onclick="toggleCalc()">🧮 حاسبة</button>
+                <button class="btn" style="background:var(--emerald-green);" onclick="toggleAiModal()">🤖 مساعدة AI</button>
+            </div>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat-item">🪙 Coins: <b id="coinsCount" style="color:var(--amber-gold)">0</b></div>
+            <div class="stat-item">🏆 المستوى: <b id="badgeRank" style="color:var(--cyan-blue)">🥉 بداية قوية</b></div>
+        </div>
+
+        <!-- لوحة التحكم (Dashboard) -->
+        <div class="dashboard-grid">
+            <div class="dash-card">
+                <h3>إجمالي المهام</h3>
+                <div class="dash-value" id="dashTotalTasks">2</div>
+            </div>
+            <div class="dash-card">
+                <h3>المهام المنجزة</h3>
+                <div class="dash-value" id="dashCompletedTasks" style="color: var(--emerald-green);">0</div>
+            </div>
+            <div class="dash-card">
+                <h3>نسبة الإنجاز</h3>
+                <div class="dash-value" id="dashProgress">0%</div>
+            </div>
+            <div class="dash-card">
+                <h3>جلسات التركيز المكتملة</h3>
+                <div class="dash-value" id="dashFocusSessions" style="color: var(--amber-gold);">0</div>
+            </div>
+        </div>
+
+        <div class="app-grid">
+            <div>
+                <div class="card" style="margin-bottom:20px;">
+                    <div class="card-title">🎯 خطة المهام التتابعية</div>
+                    <div class="task-input-group">
+                        <input type="text" id="taskSubject" placeholder="المادة (كيمياء...)" style="width:30%;">
+                        <input type="text" id="taskTitle" placeholder="المهمة..." style="width:50%;">
+                        <button class="btn" onclick="addTask()">إضافة +</button>
+                    </div>
+                    <div class="task-list" id="taskList"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">⏱️ مؤقت التركيز (Focus Lock)</div>
+                    <div class="timer-display" id="timerDisplay">25:00</div>
+                    <div class="timer-controls">
+                        <button class="btn" style="background:var(--emerald-green)" onclick="startTimer()">بدء 🚀</button>
+                        <button class="btn" style="background:var(--rose-red)" onclick="pauseTimer()">إيقاف ⏸️</button>
+                        <button class="btn" style="background:var(--amber-gold)" onclick="resetTimer()">إعادة 🔄</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الآلة الحاسبة -->
+    <div class="modal" id="calcModal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <b>آلة حاسبة</b>
+                <span style="cursor:pointer;" onclick="toggleCalc()">✕</span>
+            </div>
+            <input type="text" class="calc-screen" id="calcScreen" readonly value="0">
+            <div class="calc-grid">
+                <button class="calc-btn" onclick="calcInput('7')">7</button>
+                <button class="calc-btn" onclick="calcInput('8')">8</button>
+                <button class="calc-btn" onclick="calcInput('9')">9</button>
+                <button class="calc-btn" style="background:var(--rose-red)" onclick="calcClear()">C</button>
+                <button class="calc-btn" onclick="calcInput('4')">4</button>
+                <button class="calc-btn" onclick="calcInput('5')">5</button>
+                <button class="calc-btn" onclick="calcInput('6')">6</button>
+                <button class="calc-btn" onclick="calcInput('*')">×</button>
+                <button class="calc-btn" onclick="calcInput('1')">1</button>
+                <button class="calc-btn" onclick="calcInput('2')">2</button>
+                <button class="calc-btn" onclick="calcInput('3')">3</button>
+                <button class="calc-btn" onclick="calcInput('-')">-</button>
+                <button class="calc-btn" onclick="calcInput('0')">0</button>
+                <button class="calc-btn" onclick="calcInput('.')">.</button>
+                <button class="calc-btn" style="background:var(--emerald-green)" onclick="calcEqual()">=</button>
+                <button class="calc-btn" onclick="calcInput('+')">+</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة المساعد الذكي (AI Assistant Modal) -->
+    <div class="modal" id="aiModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <b>🤖 مساعد المذاكرة الذكي</b>
+                <span style="cursor:pointer;" onclick="toggleAiModal()">✕</span>
+            </div>
+            <div class="ai-chat-box" id="aiChatBox">
+                <div class="ai-msg bot">أهلاً بكِ! اسأليني عن أي نقطة صعبة في دراستك (مسألة فيزياء، قانون كيمياء، أو مفهوم أحياء) وسأقوم بتبسيطها لكِ فورا! 💡</div>
+            </div>
+            <div class="ai-input-group">
+                <input type="text" id="aiQuestionInput" placeholder="اكتبي سؤالك هنا..." onkeypress="handleAiKeyPress(event)">
+                <button class="btn" style="padding: 8px 12px;" onclick="askAiAssistant()">إرسال</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- وضع التركيز -->
+    <div class="focus-overlay" id="focusLock">
+        <h1 style="color: var(--cyan-blue); margin-bottom: 10px;">🔒 وضع التركيز نشط</h1>
+        <p style="color: var(--text-sub); margin-bottom: 20px;">ركز في هدفك الآن، تم تقليص المشتتات!</p>
+        <div class="timer-display" id="lockTimer" style="font-size: 5rem;">25:00</div>
+        <button class="btn" style="margin-top:20px; background:var(--rose-red);" onclick="exitFocusLock()">خروج طارئ 🚪</button>
+    </div>
+
+    <script>
+        var SECRET_ID = "2026";
+        var coins = 0;
+        var completedSessionsCount = 0;
+        var tasks = [
+            { id: 1, subject: 'كيمياء', title: 'محاضرة 3 - الباب الأول', completed: false },
+            { id: 2, subject: 'فيزياء', title: 'حل 20 سؤال', completed: false }
+        ];
+        var timerInterval = null;
+        var timeLeft = 25 * 60;
+
+        function checkLogin() {
+            var inputVal = document.getElementById('studentIdInput').value.trim();
+            if (inputVal === SECRET_ID) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContent').style.display = 'flex';
+                renderTasks();
+                updateDashboard();
+            } else {
+                document.getElementById('errorBox').style.display = 'block';
+            }
+        }
+
+        function triggerReturnBonus() {
+            coins += 2;
+            document.getElementById('coinsCount').innerText = coins;
+            alert("محدش بيحاسبك على الأيام اللي فاتت. المهم إنك رجعت للترابيزة. يلا نبدأ من هنا! 🚀 (+2 Coins)");
+        }
+
+        function updateDashboard() {
+            var total = tasks.length;
+            var completed = tasks.filter(function(t) { return t.completed; }).length;
+            var percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('dashTotalTasks').innerText = total;
+            document.getElementById('dashCompletedTasks').innerText = completed;
+            document.getElementById('dashProgress').innerText = percentage + '%';
+            document.getElementById('dashFocusSessions').innerText = completedSessionsCount;
+        }
+
+        function renderTasks() {
+            var list = document.getElementById('taskList');
+            list.innerHTML = '';
+            tasks.forEach(function(task, index) {
+                var isLocked = index > 0 && !tasks[index - 1].completed;
+                var div = document.createElement('div');
+                div.className = 'task-item ' + (task.completed ? 'completed ' : '') + (isLocked ? 'locked' : '');
+                div.innerHTML = '<div><b style="color:var(--cyan-blue)">[' + task.subject + ']</b> ' + task.title + '</div>' +
+                    '<div>' + (isLocked ? '🔒' : task.completed ? '✅' : '<button class="btn" style="padding:4px 8px; font-size:0.8rem;" onclick="completeTask(' + task.id + ')">إنجاز</button>') + '</div>';
+                list.appendChild(div);
+            });
+            updateDashboard();
+        }
+
+        function addTask() {
+            var sub = document.getElementById('taskSubject').value;
+            var title = document.getElementById('taskTitle').value;
+            if(!sub || !title) return alert('يرجى ملء البيانات');
+            tasks.push({ id: Date.now(), subject: sub, title: title, completed: false });
+            document.getElementById('taskSubject').value = '';
+            document.getElementById('taskTitle').value = '';
+            renderTasks();
+        }
+
+        function completeTask(id) {
+            tasks.forEach(function(t){ if(t.id === id) t.completed = true; });
+            coins += 2;
+            document.getElementById('coinsCount').innerText = coins;
+            renderTasks();
+        }
+
+        function updateTimerDisplay() {
+            var m = Math.floor(timeLeft / 60);
+            var s = timeLeft % 60;
+            var str = (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+            document.getElementById('timerDisplay').innerText = str;
+            document.getElementById('lockTimer').innerText = str;
+        }
+
+        function startTimer() {
+            if (timerInterval) return;
+            document.getElementById('focusLock').style.display = 'flex';
+            timerInterval = setInterval(function() {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    completedSessionsCount++;
+                    document.getElementById('focusLock').style.display = 'none';
+                    updateDashboard();
+                    alert("انتهت الجلسة بنجاح! ☕ (+1 جلسة تركيز)");
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timeLeft = 25 * 60;
+            updateTimerDisplay();
+        }
+
+        function exitFocusLock() {
+            pauseTimer();
+            document.getElementById('focusLock').style.display = 'none';
+        }
+
+        function toggleCalc() {
+            var modal = document.getElementById('calcModal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function toggleAiModal() {
+            var modal = document.getElementById('aiModal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function handleAiKeyPress(e) {
+            if (e.key === 'Enter') {
+                askAiAssistant();
+            }
+        }
+
+        function askAiAssistant() {
+            var inputField = document.getElementById('aiQuestionInput');
+            var q = inputField.value.trim();
+            if (!q) return;
+
+            var chatBox = document.getElementById('aiChatBox');
+
+            var userMsg = document.createElement('div');
+            userMsg.className = 'ai-msg user';
+            userMsg.innerText = q;
+            chatBox.appendChild(userMsg);
+
+            inputField.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            setTimeout(function() {
+                var botMsg = document.createElement('div');
+                botMsg.className = 'ai-msg bot';
+                
+                if (q.includes("فيزياء") || q.includes("قانون")) {
+                    botMsg.innerText = "فكرة السؤال تعتمد على التركيز في المعطيات وتحديد القانون الأساسي (مثل قوانين كيرشوف أو فاراداي). رتب خطواتك بهدوء وستحلها بامتياز! ⚡";
+                } else if (q.includes("كيمياء") || q.includes("معادلة")) {
+                    botMsg.innerText = "في المسائل دي، ابدأ دائماً بكتابة المعادلة موزونة صح، واشتغل بطريقة نسبة عدد المولات. أنت قدها! 🧪";
+                } else {
+                    botMsg.innerText = "سؤال ممتاز! ركّز في تفاصيل الجزئية دي وحاول ترجع للعنصر الأساسي في المنهج، ولو احتجت تفصيل أكتر أنا معاكِ. 🧠✨";
+                }
+
+                chatBox.appendChild(botMsg);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 800);
+        }
+
+        var calcExpr = '';
+        function calcInput(v) {
+            calcExpr += v;
+            document.getElementById('calcScreen').value = calcExpr;
+        }
+        function calcClear() {
+            calcExpr = '';
+            document.getElementById('calcScreen').value = '0';
+        }
+        function calcEqual() {
+            try {
+                calcExpr = eval(calcExpr).toString();
+                document.getElementById('calcScreen').value = calcExpr;
+            } catch(e) {
+                document.getElementById('calcScreen').value = 'خطأ';
+            }
+        }
+    </script>
+</body>
+</html>
