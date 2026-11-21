@@ -537,6 +537,58 @@
             document.getElementById('taskTitle').value = '';
             renderTasks();
         }
+        const ACCESS_CODE = "1122";
+
+function checkAccessCode(userInput) {
+  if (userInput.trim() === ACCESS_CODE) {
+    // افتح التطبيق أو أداة الـ AI
+    console.log("تم الدخول بنجاح");
+    return true;
+  } else {
+    alert("كود الدخول غير صحيح، حاول مرة أخرى");
+    return false;
+  }
+}
+        // 1) نطق رد الـ AI بصوت عالي
+function speakText(text) {
+  if (!("speechSynthesis" in window)) {
+    alert("المتصفح لا يدعم النطق الصوتي");
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "ar-EG"; // أو "ar-SA"
+  utterance.rate = 1;
+  window.speechSynthesis.speak(utterance);
+}
+
+// 2) الكتابة بالصوت في خانة سؤال الطالب (inputId = id بتاع خانة الإدخال)
+function startVoiceInput(inputId) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("الإدخال الصوتي يعمل بشكل أفضل في Chrome أو Edge");
+    return;
+  }
+  const recognition = new SpeechRecognition();
+  recognition.lang = "ar-EG";
+  recognition.interimResults = false;
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    const inputEl = document.getElementById(inputId);
+    if (inputEl) {
+      inputEl.value = inputEl.value ? `${inputEl.value} ${transcript}` : transcript;
+    }
+  };
+
+  recognition.onerror = () => {
+    alert("تعذر التقاط الصوت، تأكدي من صلاحية الميكروفون");
+  };
+
+  recognition.start();
+}
+        <button type="button" onclick="startVoiceInput('ai-input')">🎤 تحدث</button>
+<button type="button" onclick="speakText('أهلاً بك، اسألني أي حاجة في المذاكرة')">🔊 استمع</button>
 
         function completeTask(id) {
             tasks.forEach(function(t){ if(t.id === id) t.completed = true; });
